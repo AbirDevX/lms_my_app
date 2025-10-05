@@ -10,7 +10,7 @@ import { UserLoginDto, UserRegistrationDto } from './dto/signup.dto';
 @Injectable()
 export class AuthService {
     constructor(
-        private readonly userService: UserService,
+        private readonly userService: UserService, // canicular dependence
         private readonly jwtService: JwtService,
         private readonly configService: ConfigService,
         private readonly hashService: HashService
@@ -100,7 +100,7 @@ export class AuthService {
 
     // Generate Access Token (uses default JwtModule config)
     async generateAccessToken(payload: any): Promise<string> {
-        return await this.jwtService.signAsync(payload);
+        return await this.jwtService.signAsync(payload, { secret: this.configService.get("JWT_ACCESS_TOKEN_SECRET") });
     }
 
     // Generate Refresh Token (custom secret and expiry)
@@ -113,7 +113,7 @@ export class AuthService {
 
     // Verify Access Token (uses default config)
     async verifyAccessToken(token: string): Promise<any> {
-        return await this.jwtService.verifyAsync(token);
+        return await this.jwtService.verifyAsync(token, { secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET') });
     }
 
     // Verify Refresh Token (custom secret)
