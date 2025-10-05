@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
+
 /* eslint-disable prettier/prettier */
 import {
   IsEmail,
@@ -10,6 +10,7 @@ import {
   MinLength,
 } from 'class-validator';
 
+// REGISTER
 export class UserRegistrationDto {
   @IsNotEmpty({ message: 'fullname is required' })
   @IsString({ message: 'fullname must be a string' })
@@ -29,6 +30,19 @@ export class UserRegistrationDto {
     message: 'mobile is not valid format',
   })
   mobile: string;
+
+  @IsNotEmpty({ message: 'password is required' })
+  @IsString({ message: 'password must be string' })
+  @MinLength(8, { message: 'password must be at least 8 characters long' })
+  @MaxLength(128, { message: 'password must not exceed 128 characters' })
+  password: string;
+}
+
+// LOGIN
+export class UserLoginDto {
+  @IsNotEmpty({ message: 'username is required' })
+  @IsString({ message: 'username must be string' })
+  username: string;
 
   @IsNotEmpty({ message: 'password is required' })
   @IsString({ message: 'password must be string' })

@@ -1,11 +1,11 @@
 /* eslint-disable prettier/prettier */
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { UserResponseDto } from 'src/common/dto/user.dto';
 import { HashService } from 'src/common/services/hash.service';
 import { UserService } from 'src/user/user.service';
-import { UserRegistrationDto } from './dto/signup.dto';
+import { UserLoginDto, UserRegistrationDto } from './dto/signup.dto';
 
 @Injectable()
 export class AuthService {
@@ -57,11 +57,44 @@ export class AuthService {
             const status = error instanceof HttpException ? error.getStatus() : 500;
             const message = error instanceof Error ? error.message : 'Registration failed';
 
-            return {
-                status: false,
-                message: message,
-                status_code: status,
+            throw new HttpException({ status: false, message: message, status_code: status }, status);
+        }
+    }
+
+    async userSignInService(payload: UserLoginDto) {
+        try {
+            const isUserExist = await this.userService.findOneByEmailOrMobileOrUsername(payload?.username);
+            if (!isUserExist) throw new HttpException("User Not Found.!", HttpStatus.BAD_REQUEST);
+
+            const isValidPassword = await this.hashService.compare(payload?.password, isUserExist?.password);
+            if (!isValidPassword) throw new UnauthorizedException("Unauthorized, try again.!");
+
+            const updatedObj = {
+                updated_at: new Date()
             };
+            await this.userService.updateByPk(updatedObj, isUserExist?.id);
+
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            const tokenPayload = { sub: isUserExist?.id, created_at: isUserExist?.created_at };
+
+            const [accessToken, refreshToken] = await Promise.all([
+                this.generateAccessToken(tokenPayload),
+                this.generateRefreshToken(tokenPayload),
+            ]);
+
+            return {
+                status: true,
+                status_code: 200,
+                message: "SIGN IN SUCCESSFULLY",
+                access_token: accessToken,
+                refresh_token: refreshToken,
+                data: new UserResponseDto(isUserExist?.dataValues)
+            };
+        } catch (error: unknown) {
+            const status = error instanceof HttpException ? error.getStatus() : 500;
+            const message = error instanceof Error ? error.message : 'Registration failed';
+
+            throw new HttpException({ status: false, message: message, status_code: status }, status);
         }
     }
 

@@ -1,17 +1,25 @@
 /* eslint-disable prettier/prettier */
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, Post } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { UserService } from 'src/user/user.service';
 import { AuthService } from './auth.service';
-import { UserRegistrationDto } from './dto/signup.dto';
+import { UserLoginDto, UserRegistrationDto } from './dto/signup.dto';
 
 @Controller('auth')
 export class AuthController {
     constructor(private readonly authService: AuthService, private readonly userService: UserService) { }
 
-    @Throttle({ default: { limit: 2, ttl: 60000 } })
+    @Throttle({ default: { limit: 20, ttl: 60000 } })
     @Post("/sign-up")
+    @HttpCode(201)
     async signUp(@Body() payload: UserRegistrationDto) {
         return this.authService.userSignUpService(payload);
+    }
+
+    @Throttle({ default: { limit: 20, ttl: 60000 } })
+    @Post("/sign-in")
+    @HttpCode(200)
+    async signIn(@Body() payload: UserLoginDto) {
+        return this.authService.userSignInService(payload);
     }
 }
