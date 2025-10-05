@@ -1,22 +1,32 @@
 /* eslint-disable prettier/prettier */
-import { Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { UserService } from 'src/user/user.service';
 import { AuthService } from './auth.service';
+import { UserRegistrationDto } from './dto/signup.dto';
 
 @Controller('auth')
 export class AuthController {
     constructor(private readonly authService: AuthService, private readonly userService: UserService) { }
 
+    @Throttle({ default: { limit: 2, ttl: 60000 } })
     @Post("/sign-up")
-    async signUp() {
+    async signUp(@Body() payload: UserRegistrationDto) {
         try {
-            const userList = await this.userService.findAll();
-            return userList
-        } catch (error: unknown) {
+            console.log(payload);
             return {
-                success: false,
-                message: error instanceof Error && error.message || 'Registration failed',
-                error: process.env.NODE_ENV === 'development' ? (error instanceof Error && error.stack) : undefined,
+                status: true,
+                status_code: 201,
+                message: "Sign Up Successfully"
+            };
+        } catch (error: unknown) {
+            const status = error?.status || 500;
+            const message = error instanceof Error && error.message || 'Registration failed';
+
+            return {
+                status: false,
+                message: message,
+                status_code: status,
             };
         }
     }

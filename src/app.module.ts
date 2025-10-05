@@ -1,22 +1,52 @@
 /* eslint-disable prettier/prettier */
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
 import { SequelizeModule } from '@nestjs/sequelize';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { CourseModule } from './course/course.module';
 import { ProductModule } from './product/product.module';
-import { User } from './user/model/user.model';
 import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
-    // env config
+    // ENV CONFIG
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    // mysql config
+    // RATE LIMITING - NEW FORMAT for v6+
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        throttlers: [
+          {
+            name: 'default',
+            ttl: config.get<number>('THROTTLE_TTL', 60000), // Default: 60 seconds (milliseconds)
+            limit: config.get<number>('THROTTLE_LIMIT', 10), // Default: 10 requests
+          },
+          {
+            name: 'short',
+            ttl: 1000,      // 1 second
+            limit: 3,       // 3 requests
+          },
+          {
+            name: 'medium',
+            ttl: 10000,     // 10 seconds
+            limit: 20,      // 20 requests
+          },
+          {
+            name: 'long',
+            ttl: 60000,     // 60 seconds
+            limit: 100,     // 100 requests
+          },
+        ],
+      }),
+    }),
+    // MYSQL CONFIG
     SequelizeModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -28,7 +58,8 @@ import { UserModule } from './user/user.module';
           username: configService.get<string>('DB_USERNAME', 'root'),
           password: configService.get<string>('DB_PASSWORD', '123456'),
           database: configService.get<string>('DB_DATABASE', 'my_database'),
-          models: [User],
+          // models: [User],
+          autoLoadModels: true,
           synchronize: true,
           logging: console.log
         };
@@ -40,6 +71,8 @@ import { UserModule } from './user/user.module';
     CourseModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    { provide: APP_GUARD, useClass: ThrottlerGuard, }, // authorized rate limiting
+    AppService],
 })
 export class AppModule { }
