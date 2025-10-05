@@ -10,6 +10,7 @@ import { AuthModule } from './auth/auth.module';
 import { CourseModule } from './course/course.module';
 import { ProductModule } from './product/product.module';
 import { UserModule } from './user/user.module';
+import { HashService } from './common/services/hash.service';
 
 @Module({
   imports: [
@@ -73,6 +74,6 @@ import { UserModule } from './user/user.module';
   controllers: [AppController],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard, }, // authorized rate limiting
-    AppService],
+    AppService, HashService],
 })
 export class AppModule { }

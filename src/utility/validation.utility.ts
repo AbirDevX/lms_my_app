@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 
 import { ValidationError } from "@nestjs/common";
-import { CustomValidationError } from "src/interface/validation.interface";
+import { CustomValidationError } from "src/common/interface/validation.interface";
 
 export function flattenValidationErrors(errors: ValidationError[], parentPath = ''): CustomValidationError[] {
     const result: CustomValidationError[] = [];

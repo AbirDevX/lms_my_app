@@ -5,7 +5,7 @@ import { getConnectionToken } from '@nestjs/sequelize';
 import helmet from 'helmet';
 import { Sequelize } from 'sequelize';
 import { AppModule } from './app.module';
-import { CustomValidationResponse } from './interface/validation.interface';
+import { CustomValidationResponse } from './common/interface/validation.interface';
 import { flattenValidationErrors } from './utility/validation.utility';
 
 
