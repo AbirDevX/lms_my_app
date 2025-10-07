@@ -7,10 +7,11 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { HashService } from './common/services/hash.service';
 import { CourseModule } from './course/course.module';
 import { ProductModule } from './product/product.module';
 import { UserModule } from './user/user.module';
-import { HashService } from './common/services/hash.service';
 
 @Module({
   imports: [
@@ -70,10 +71,11 @@ import { HashService } from './common/services/hash.service';
     ProductModule,
     UserModule,
     CourseModule,
+    CloudinaryModule,
   ],
   controllers: [AppController],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard, }, // authorized rate limiting
-    AppService, HashService],
+    AppService, HashService,],
 })
 export class AppModule { }
