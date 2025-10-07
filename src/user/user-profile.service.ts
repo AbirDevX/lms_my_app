@@ -1,6 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { extractPublicId } from 'cloudinary-build-url';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { UserResponseDto } from 'src/common/dto/user.dto';
 import { User } from './model/user.model';
@@ -33,7 +34,24 @@ export class UserProfileService {
 
     async changeAvatar(file: Express.Multer.File, userId: number) {
         try {
+            const currentUser = await this.userModel.findByPk(userId);
+            if (!currentUser) throw new BadRequestException("User Not Found.");
+
             const result = await this.cloudinaryService.uploadFile(file, userId);
+
+            const prevAvatar = currentUser?.avatar;
+            // update to db
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            currentUser.avatar = result.secure_url;
+            currentUser.updated_at = new Date();
+            await currentUser.save();
+
+            // Delete the prev image
+            if (prevAvatar) {
+                const publicId = extractPublicId(prevAvatar);
+                await this.cloudinaryService.destroyAssets(publicId);
+                console.log("PREV IMG DELETED SUCCESS");
+            }
 
             return {
                 status: true,

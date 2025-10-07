@@ -34,7 +34,6 @@ export class UserController {
     file: Express.Multer.File,
     @Req() req: AuthenticatedRequest,
   ) {
-
     const user = req?.user;
     return this.userProfileService.changeAvatar(file, user?.sub);
   }

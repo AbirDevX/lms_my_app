@@ -25,4 +25,10 @@ export class CloudinaryService {
             streamifier.createReadStream(file.buffer).pipe(uploadStream);
         });
     }
+
+    destroyAssets(publicID: string) {
+        return cloudinary.uploader.destroy(publicID, {
+            resource_type: 'image',
+        });
+    }
 }
