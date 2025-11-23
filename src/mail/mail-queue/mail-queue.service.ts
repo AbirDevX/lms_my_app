@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { MailerService } from '@nestjs-modules/mailer';
 import { Process, Processor } from '@nestjs/bull';
-import type { Job } from 'bull'; // Type-only import
+import type { Job } from 'bull';
 
 interface WelcomeMailPayload {
     to: string;
@@ -28,7 +28,6 @@ export class MailQueueService {
                     confirmation_url: 'http://localhost:8080'
                 }
             });
-            console.log(`Welcome email sent to ${to} Successfully`);
         } catch (error) {
             console.log(error);
         }
