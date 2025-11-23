@@ -10,6 +10,7 @@ import { AuthModule } from './auth/auth.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { HashService } from './common/services/hash.service';
 import { CourseModule } from './course/course.module';
+import { MailModule } from './mail/mail.module';
 import { ProductModule } from './product/product.module';
 import { UserModule } from './user/user.module';
 
@@ -72,6 +73,7 @@ import { UserModule } from './user/user.module';
     UserModule,
     CourseModule,
     CloudinaryModule,
+    MailModule,
   ],
   controllers: [AppController],
   providers: [

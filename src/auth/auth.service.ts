@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { UserResponseDto } from 'src/common/dto/user.dto';
 import { HashService } from 'src/common/services/hash.service';
+import { MailService } from 'src/mail/mail.service';
 import { UserService } from 'src/user/user.service';
 import { UserLoginDto, UserRegistrationDto } from './dto/signup.dto';
 
@@ -13,7 +14,8 @@ export class AuthService {
         private readonly userService: UserService, // canicular dependence
         private readonly jwtService: JwtService,
         private readonly configService: ConfigService,
-        private readonly hashService: HashService
+        private readonly hashService: HashService,
+        private readonly mailService: MailService
     ) { }
 
     async userSignUpService(payload: UserRegistrationDto) {
@@ -45,6 +47,9 @@ export class AuthService {
                 this.generateRefreshToken(tokenPayload),
             ]);
 
+            // SEND WELCOME MAIL
+            await this.mailService.sendWelcomeEmail(createdObj.email, createdObj.username);
+
             return {
                 status: true,
                 status_code: 201,
@@ -57,7 +62,7 @@ export class AuthService {
             const status = error instanceof HttpException ? error.getStatus() : 500;
             const message = error instanceof Error ? error.message : 'Registration failed';
 
-            throw new HttpException({ status: false, message: message, status_code: status }, status);
+            throw new HttpException({ status: false, message: message, status_code: status, error, }, status);
         }
     }
 
